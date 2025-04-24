@@ -6,10 +6,22 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary1
 {
-    public class Class1
+    /*
+     * Using Nuget Manager install
+     * 1. NUnit
+     * 2. NUnit3TestAdapter
+     * 3.  Moq
+     * For it to work
+     */
+    public class InsuranceService
     {
-        class InsuranceService
-        {
+            public IDiscountService _discountService;      //For part i - Injecting the dependency
+
+            public InsuranceService(IDiscountService discountService)
+            {
+                _discountService = discountService;
+            }
+
             public double CalcPremium(int age, string gameMode)
             {
                 double premium;
@@ -32,8 +44,11 @@ namespace ClassLibrary1
                 else
                     premium = 0.0;
 
-                DiscountService ds = new DiscountService();  // tightly coupled
-                double discount = ds.GetDiscount();
+                //DiscountService ds = new DiscountService();  // tightly coupled
+                //double discount = ds.GetDiscount();
+
+                //decoupled version
+                double discount = _discountService.GetDiscount();  //For part i - Injecting the dependency
                 if (age >= 50)
                     premium = premium * discount;
 
@@ -41,4 +56,3 @@ namespace ClassLibrary1
             }
         }
     }
-}
