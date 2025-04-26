@@ -3,8 +3,8 @@ trigger:
     include:
       - main  # Trigger build on main branch, adjust as needed
 
-# No need for an explicit pool if you're using the default pool
-# The system will use the default agent pool automatically
+pool:
+  name: 'Default'  # Explicitly specify the default pool or your custom pool
 
 steps:
 # Step 1: Install the required .NET SDK
