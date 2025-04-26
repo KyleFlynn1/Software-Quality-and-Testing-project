@@ -1,40 +1,44 @@
 trigger:
-- main  # or your branch
+- main  # or your default branch
 
 pool:
-  name: Default  # using your private agent
+  vmImage: 'windows-latest'
 
 steps:
-- checkout: self  # checkout your code
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: 'Software-Quality-and-Testing-project/SoftwareQuality.sln'
+    feedsToUse: 'select'
+    vstsFeed: ''
+    externalFeedUrl: 'https://api.nuget.org/v3/index.json'
+  displayName: 'Add NuGet source'
 
-- script: dotnet --list-sdks
-  displayName: 'List installed .NET SDKs'
-
-- script: dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
-  displayName: 'Add public NuGet source'
-
-# Step 1: Move into the project folder where your .csproj or .sln file is
 - script: |
-    cd Software-Quality-and-Testing-project  # Change to the project folder
-    dotnet restore  # Restore dependencies
+    dotnet nuget locals all --clear  # Clear NuGet cache
+  displayName: 'Clear NuGet cache'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'restore'
+    projects: 'Software-Quality-and-Testing-project/SoftwareQuality.sln'
   displayName: 'Restore dependencies'
 
-# Step 2: Build your project
-- script: |
-    cd Software-Quality-and-Testing-project  # Ensure you're in the correct folder
-    dotnet build  # Build your project
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: 'Software-Quality-and-Testing-project/SoftwareQuality.sln'
   displayName: 'Build project'
 
-# Step 3: Run tests
-- script: |
-    cd Software-Quality-and-Testing-project  # Ensure you're in the correct folder
-    dotnet test --configuration Release --logger "trx"
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: 'Software-Quality-and-Testing-project/InsuranceServiceTests/InsuranceServiceTests.csproj'
+    arguments: '--configuration Release --logger "trx"'
   displayName: 'Run tests'
 
-# Step 4: Publish the test results
 - task: PublishTestResults@2
   inputs:
-    testResultsFormat: 'VSTest'  # Use VSTest for .trx files
-    testResultsFiles: '**/TestResults/*.trx'
+    testResultsFormat: 'NUnit'
+    testResultsFiles: '**/TestResults/**/*.xml'
     failTaskOnFailedTests: true
-  displayName: 'Publish Test Results'
+  displayName: 'Publish test results'
