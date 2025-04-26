@@ -7,46 +7,38 @@ pool:
   name: 'Default'  # This explicitly uses the default agent pool
 
 steps:
-# Step 1: Install .NET SDK
+# Step 1: Install .NET SDK (adjust version as needed)
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
     version: '6.x'  # Use .NET 6 (or another version you're targeting)
 
-# Step 2: Install Node.js (required for Angular)
-- task: UseNode@1
-  inputs:
-    versionSpec: '16.x'  # Install Node.js (adjust as needed for your project)
-    addToPath: true  # Ensure Node.js is available in the PATH
-
-# Step 3: Install Angular dependencies
-- script: |
-    npm install -g @angular/cli
-    npm install
-  displayName: 'Install Angular dependencies'
-
-# Step 4: Build Angular project
-- script: |
-    ng build --prod
-  displayName: 'Build Angular project'
-
-# Step 5: Restore .NET dependencies
+# Step 2: Restore .NET dependencies
 - task: DotNetCoreCLI@2
   displayName: 'Restore .NET dependencies'
   inputs:
     command: 'restore'
     projects: '**/ClassLibrary1.sln'  # Adjust to your actual solution file path
 
-# Step 6: Build .NET solution
+# Step 3: Build .NET solution
 - task: DotNetCoreCLI@2
   displayName: 'Build .NET solution'
   inputs:
     command: 'build'
     projects: '**/ClassLibrary1.sln'  # Adjust to your actual solution file path
 
-# Step 7: Run .NET tests
+# Step 4: Run NUnit tests
 - task: DotNetCoreCLI@2
-  displayName: 'Run .NET tests'
+  displayName: 'Run NUnit tests'
   inputs:
     command: 'test'
     projects: '**/ClassLibrary1.sln'  # Adjust to your actual solution file path
+    arguments: '--filter "TestCategory!=Integration" --logger trx'  # Optional: Customize the test filter and logger format
+
+# Optional: Publish test results (if needed)
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '**/TestResults/**/*.xml'
+    testRunTitle: 'NUnit Tests Results'
+    mergeTestResults: true
+    failTaskOnFailedTests: true
