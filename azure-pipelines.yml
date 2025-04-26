@@ -1,33 +1,42 @@
-# .NET Desktop
-# Build and run tests for .NET Desktop or Windows classic desktop solutions.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
-
 trigger:
-- main
+- main  # or your default branch
 
 pool:
-  vmImage: 'Default'
-
-variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+  vmImage: 'Default'  # or windows-latest if you're using Windows agents
 
 steps:
-- task: NuGetToolInstaller@1
-
-- task: NuGetCommand@2
+- task: UseDotNet@2
   inputs:
-    restoreSolution: '$(solution)'
+    packageType: 'sdk'
+    version: '6.x'  # use the correct .NET version for your project
+    installationPath: $(Agent.ToolsDirectory)/dotnet
 
-- task: VSBuild@1
+# Step 1: Restore dependencies for both ClassLibrary1 and InsuranceServiceTests
+- task: DotNetCoreCLI@2
   inputs:
-    solution: '$(solution)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: 'restore'
+    projects: |
+      **/ClassLibrary1/ClassLibrary1.csproj
+      **/InsuranceServiceTests/InsuranceServiceTests.csproj
 
-- task: VSTest@2
+# Step 2: Build both projects (ClassLibrary1 and InsuranceServiceTests)
+- task: DotNetCoreCLI@2
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: 'build'
+    projects: |
+      **/ClassLibrary1/ClassLibrary1.csproj
+      **/InsuranceServiceTests/InsuranceServiceTests.csproj
+
+# Step 3: Run NUnit tests in the InsuranceServiceTests project
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: '**/InsuranceServiceTests/InsuranceServiceTests.csproj'
+    arguments: '--configuration Release --logger "trx"'
+
+# (Optional) Step 4: Publish test results to Azure DevOps
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'NUnit'
+    testResultsFiles: '**/TestResults/**/*.xml'
+    failTaskOnFailedTests: true
