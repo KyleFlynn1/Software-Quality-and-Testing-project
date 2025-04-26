@@ -2,8 +2,7 @@ trigger:
 - main  # or your default branch
 
 pool:
-  vmImage: 'Default'  # or windows-latest if you're using Windows agents
-
+  name: 'Default'   
 steps:
 - task: UseDotNet@2
   inputs:
