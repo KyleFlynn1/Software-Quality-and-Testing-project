@@ -1,44 +1,48 @@
 trigger:
   branches:
     include:
-      - main  # Trigger build on the main branch (adjust as needed)
+      - main  # Adjust this to your target branch if needed
 
 pool:
-  name: 'Default'  # This explicitly uses the default agent pool
+  name: 'Default'  # Default agent pool
 
 steps:
-# Step 1: Install .NET SDK (adjust version as needed)
+# Step 1: Install .NET 8 SDK (since your project targets .NET 8)
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '6.x'  # Use .NET 6 (or another version you're targeting)
+    version: '8.x'  # Install .NET 8.x SDK
+    installationPath: $(Agent.ToolsDirectory)/dotnet  # Use default installation path
 
-# Step 2: Restore .NET dependencies
+# Step 2: Checkout the repository
+- checkout: self  # This ensures that the pipeline gets the code from your GitHub repo
+
+# Step 3: Restore .NET dependencies
 - task: DotNetCoreCLI@2
   displayName: 'Restore .NET dependencies'
   inputs:
     command: 'restore'
-    projects: '**/ClassLibrary1.sln'  # Adjust to your actual solution file path
+    projects: '**/ClassLibrary1.sln'  # Path to your solution file
 
-# Step 3: Build .NET solution
+# Step 4: Build the solution
 - task: DotNetCoreCLI@2
   displayName: 'Build .NET solution'
   inputs:
     command: 'build'
-    projects: '**/ClassLibrary1.sln'  # Adjust to your actual solution file path
+    projects: '**/ClassLibrary1.sln'  # Path to your solution file
 
-# Step 4: Run NUnit tests
+# Step 5: Run NUnit tests
 - task: DotNetCoreCLI@2
   displayName: 'Run NUnit tests'
   inputs:
     command: 'test'
-    projects: '**/ClassLibrary1.sln'  # Adjust to your actual solution file path
-    arguments: '--filter "TestCategory!=Integration" --logger trx'  # Optional: Customize the test filter and logger format
+    projects: '**/ClassLibrary1.sln'  # Path to your solution file
+    arguments: '--logger trx'  # Optional: Customize the test logger (e.g., .trx format)
 
-# Optional: Publish test results (if needed)
+# Optional: Publish test results
 - task: PublishTestResults@2
   inputs:
-    testResultsFiles: '**/TestResults/**/*.xml'
+    testResultsFiles: '**/TestResults/**/*.xml'  # Path to your test result XML files
     testRunTitle: 'NUnit Tests Results'
     mergeTestResults: true
     failTaskOnFailedTests: true
