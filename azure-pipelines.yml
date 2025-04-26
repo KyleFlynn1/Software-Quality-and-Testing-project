@@ -1,22 +1,22 @@
 trigger:
   branches:
     include:
-      - main  # Trigger build on the main branch, adjust as needed
+      - main  # Trigger build on the main branch (adjust as needed)
 
-# Using the default agent pool (no need to specify pool explicitly if you want to use default)
-# Azure DevOps will automatically select the default agent pool.
+pool:
+  name: 'Default'  # This explicitly uses the default agent pool
 
 steps:
 # Step 1: Install .NET SDK
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '6.x'  # Use .NET 6 (or any other appropriate LTS version)
+    version: '6.x'  # Use .NET 6 (or another version you're targeting)
 
 # Step 2: Install Node.js (required for Angular)
 - task: UseNode@1
   inputs:
-    versionSpec: '16.x'  # Install a suitable Node.js version (adjust based on your project)
+    versionSpec: '16.x'  # Install Node.js (adjust as needed for your project)
     addToPath: true  # Ensure Node.js is available in the PATH
 
 # Step 3: Install Angular dependencies
