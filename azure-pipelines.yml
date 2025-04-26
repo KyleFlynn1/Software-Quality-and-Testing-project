@@ -8,13 +8,13 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'restore'
-    projects: 'Software-Quality-and-Testing-project/SoftwareQuality.sln'
+    projects: 'Software-Quality-and-Testing-project/ClassLibrary1.sln'
   displayName: 'Restore dependencies'
 
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
-    projects: 'Software-Quality-and-Testing-project/SoftwareQuality.sln'
+    projects: 'Software-Quality-and-Testing-project/ClassLibrary1.sln'
   displayName: 'Build project'
 
 - task: DotNetCoreCLI@2
