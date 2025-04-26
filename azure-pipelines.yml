@@ -1,22 +1,10 @@
 trigger:
-- main  # or your default branch
+- main  # Or your default branch
 
 pool:
-  Name: 'Default'
+  name: 'Default'  # Make sure this matches your agent pool
 
 steps:
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: 'Software-Quality-and-Testing-project/SoftwareQuality.sln'
-    feedsToUse: 'select'
-    vstsFeed: ''
-    externalFeedUrl: 'https://api.nuget.org/v3/index.json'
-  displayName: 'Add NuGet source'
-
-- script: |
-    dotnet nuget locals all --clear  # Clear NuGet cache
-  displayName: 'Clear NuGet cache'
-
 - task: DotNetCoreCLI@2
   inputs:
     command: 'restore'
