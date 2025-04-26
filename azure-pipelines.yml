@@ -1,32 +1,38 @@
 trigger:
-- main  # Or your default branch
+  branches:
+    include:
+      - main  # Trigger build on main branch, adjust as needed
 
-pool:
-  name: 'Default'  # Make sure this matches your agent pool
+# No need for an explicit pool if you're using the default pool
+# The system will use the default agent pool automatically
 
 steps:
+# Step 1: Install the required .NET SDK
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '6.x'  # Ensure you use a supported .NET version (update to 6.x or later)
+
+# Step 2: Restore the dependencies for the solution
 - task: DotNetCoreCLI@2
+  displayName: 'Restore dependencies'
   inputs:
     command: 'restore'
-    projects: 'Software-Quality-and-Testing-project/ClassLibrary1.sln'
-  displayName: 'Restore dependencies'
+    projects: '**/ClassLibrary1.sln'  # Searching for .sln file in the repository
+    workingDirectory: '$(Build.SourcesDirectory)/Software-Quality-and-Testing-project/ClassLibrary1'  # Correct working directory
 
+# Step 3: Build the solution
 - task: DotNetCoreCLI@2
+  displayName: 'Build solution'
   inputs:
     command: 'build'
-    projects: 'Software-Quality-and-Testing-project/ClassLibrary1.sln'
-  displayName: 'Build project'
+    projects: '**/ClassLibrary1.sln'  # Searching for the .sln file
+    workingDirectory: '$(Build.SourcesDirectory)/Software-Quality-and-Testing-project/ClassLibrary1'  # Correct working directory
 
+# Step 4: Run unit tests
 - task: DotNetCoreCLI@2
+  displayName: 'Run tests'
   inputs:
     command: 'test'
-    projects: 'Software-Quality-and-Testing-project/InsuranceServiceTests/InsuranceServiceTests.csproj'
-    arguments: '--configuration Release --logger "trx"'
-  displayName: 'Run tests'
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: 'NUnit'
-    testResultsFiles: '**/TestResults/**/*.xml'
-    failTaskOnFailedTests: true
-  displayName: 'Publish test results'
+    projects: '**/ClassLibrary1.sln'  # Searching for .sln file
+    workingDirectory: '$(Build.SourcesDirectory)/Software-Quality-and-Testing-project/ClassLibrary1'  # Correct working directory
