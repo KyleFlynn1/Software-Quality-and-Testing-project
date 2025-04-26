@@ -2,7 +2,7 @@ trigger:
 - main  # or your default branch
 
 pool:
-  vmImage: 'windows-latest'
+  Name: 'Default'
 
 steps:
 - task: NuGetCommand@2
