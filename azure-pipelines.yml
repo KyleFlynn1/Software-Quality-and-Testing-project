@@ -1,41 +1,40 @@
 trigger:
-- main  # or your default branch
+- main  # or your branch
 
 pool:
-  name: 'Default'   
+  name: Default  # using your private agent
+
 steps:
-- task: UseDotNet@2
-  inputs:
-    packageType: 'sdk'
-    version: '6.x'  # use the correct .NET version for your project
-    installationPath: $(Agent.ToolsDirectory)/dotnet
+- checkout: self  # checkout your code
 
-# Step 1: Restore dependencies for both ClassLibrary1 and InsuranceServiceTests
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'restore'
-    projects: |
-      **/ClassLibrary1/ClassLibrary1.csproj
-      **/InsuranceServiceTests/InsuranceServiceTests.csproj
+- script: dotnet --list-sdks
+  displayName: 'List installed .NET SDKs'
 
-# Step 2: Build both projects (ClassLibrary1 and InsuranceServiceTests)
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'build'
-    projects: |
-      **/ClassLibrary1/ClassLibrary1.csproj
-      **/InsuranceServiceTests/InsuranceServiceTests.csproj
+- script: dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
+  displayName: 'Add public NuGet source'
 
-# Step 3: Run NUnit tests in the InsuranceServiceTests project
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'test'
-    projects: '**/InsuranceServiceTests/InsuranceServiceTests.csproj'
-    arguments: '--configuration Release --logger "trx"'
+# Step 1: Move into the project folder where your .csproj or .sln file is
+- script: |
+    cd Software-Quality-and-Testing-project  # Change to the project folder
+    dotnet restore  # Restore dependencies
+  displayName: 'Restore dependencies'
 
-# (Optional) Step 4: Publish test results to Azure DevOps
+# Step 2: Build your project
+- script: |
+    cd Software-Quality-and-Testing-project  # Ensure you're in the correct folder
+    dotnet build  # Build your project
+  displayName: 'Build project'
+
+# Step 3: Run tests
+- script: |
+    cd Software-Quality-and-Testing-project  # Ensure you're in the correct folder
+    dotnet test --configuration Release --logger "trx"
+  displayName: 'Run tests'
+
+# Step 4: Publish the test results
 - task: PublishTestResults@2
   inputs:
-    testResultsFormat: 'NUnit'
-    testResultsFiles: '**/TestResults/**/*.xml'
+    testResultsFormat: 'VSTest'  # Use VSTest for .trx files
+    testResultsFiles: '**/TestResults/*.trx'
     failTaskOnFailedTests: true
+  displayName: 'Publish Test Results'
