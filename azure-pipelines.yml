@@ -1,48 +1,36 @@
 trigger:
   branches:
     include:
-      - main  # Adjust this to your target branch if needed
-
+      - main
+      
 pool:
-  name: 'Default'  # Default agent pool
+  name: 'Default'
 
 steps:
-# Step 1: Install .NET 8 SDK (since your project targets .NET 8)
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '8.x'  # Install .NET 8.x SDK
-    installationPath: $(Agent.ToolsDirectory)/dotnet  # Use default installation path
+    version: '8.x'
+    installationPath: $(Agent.ToolsDirectory)/dotnet
 
-# Step 2: Checkout the repository
-- checkout: self  # This ensures that the pipeline gets the code from your GitHub repo
+- checkout: self
 
-# Step 3: Restore .NET dependencies
 - task: DotNetCoreCLI@2
   displayName: 'Restore .NET dependencies'
   inputs:
     command: 'restore'
-    projects: '**/ClassLibrary1.sln'  # Path to your solution file
+    projects: '**/ClassLibrary1.sln'
 
-# Step 4: Build the solution
 - task: DotNetCoreCLI@2
   displayName: 'Build .NET solution'
   inputs:
     command: 'build'
-    projects: '**/ClassLibrary1.sln'  # Path to your solution file
+    projects: '**/ClassLibrary1.sln'
 
-# Step 5: Run NUnit tests
 - task: DotNetCoreCLI@2
   displayName: 'Run NUnit tests'
   inputs:
     command: 'test'
-    projects: '**/ClassLibrary1.sln'  # Path to your solution file
+    projects: '**/ClassLibrary1.sln'
     arguments: '--logger trx'  # Optional: Customize the test logger (e.g., .trx format)
 
-# Optional: Publish test results
-- task: PublishTestResults@2
-  inputs:
-    testResultsFiles: '**/TestResults/**/*.xml'  # Path to your test result XML files
-    testRunTitle: 'NUnit Tests Results'
-    mergeTestResults: true
-    failTaskOnFailedTests: true
